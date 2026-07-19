@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: damngamerz-pi-otel
+    type: file
+    disableDeletion: true
+    editable: true
+    options:
+      path: /dashboards/damngamerz-pi-otel.json

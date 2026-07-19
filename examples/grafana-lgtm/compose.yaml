@@ -1,0 +1,16 @@
+services:
+  lgtm:
+    image: grafana/otel-lgtm:0.29.1@sha256:b4da8bf6b1b44f6f683883869619eb9781465c642ce5f2d70591fb27094ddb1c
+    container_name: damngamerz-pi-otel-lgtm
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${OTLP_GRPC_PORT:-4317}:4317"
+      - "127.0.0.1:${OTLP_HTTP_PORT:-4318}:4318"
+      - "127.0.0.1:${GRAFANA_PORT:-33000}:3000"
+    volumes:
+      - ./dashboard.json:/dashboards/damngamerz-pi-otel.json:ro
+      - ./provisioning.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/damngamerz-pi-otel.yaml:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

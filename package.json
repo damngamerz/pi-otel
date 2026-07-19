@@ -1,0 +1,87 @@
+{
+	"name": "@damngamerz/pi-otel",
+	"version": "0.1.0",
+	"description": "Privacy-conscious OpenTelemetry traces, metrics, and optional LLM evaluation for Pi",
+	"type": "module",
+	"license": "MIT",
+	"author": "Damngamerz",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/damngamerz/pi-otel.git"
+	},
+	"homepage": "https://github.com/damngamerz/pi-otel#readme",
+	"bugs": {
+		"url": "https://github.com/damngamerz/pi-otel/issues"
+	},
+	"keywords": [
+		"pi-package",
+		"pi-extension",
+		"opentelemetry",
+		"otel",
+		"gen-ai",
+		"llm",
+		"evaluation",
+		"observability"
+	],
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"examples",
+		"docs",
+		"README.md",
+		"LICENSE",
+		"NOTICE",
+		"ACKNOWLEDGEMENTS.md",
+		"SECURITY.md",
+		"CHANGELOG.md",
+		"LICENSES"
+	],
+	"pi": {
+		"extensions": [
+			"./dist/index.js"
+		]
+	},
+	"scripts": {
+		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+		"build": "npm run clean && tsc -p tsconfig.json",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"lint": "biome lint .",
+		"test": "tsx --test test/*.test.ts",
+		"check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+		"prepack": "npm run check",
+		"sbom": "npm sbom --omit=dev --package-lock-only --sbom-format cyclonedx"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-ai": ">=0.80.10 <0.81.0",
+		"@earendil-works/pi-coding-agent": ">=0.80.10 <0.81.0"
+	},
+	"dependencies": {
+		"@opentelemetry/api": "1.9.1",
+		"@opentelemetry/exporter-metrics-otlp-http": "0.220.0",
+		"@opentelemetry/exporter-trace-otlp-http": "0.220.0",
+		"@opentelemetry/resources": "2.9.0",
+		"@opentelemetry/sdk-metrics": "2.9.0",
+		"@opentelemetry/sdk-trace-base": "2.9.0",
+		"@opentelemetry/sdk-trace-node": "2.9.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.4",
+		"@earendil-works/pi-ai": "0.80.10",
+		"@earendil-works/pi-coding-agent": "0.80.10",
+		"@types/node": "22.19.11",
+		"tsx": "4.23.1",
+		"typescript": "5.9.3"
+	}
+}

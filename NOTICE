@@ -1,0 +1,15 @@
+@damngamerz/pi-otel
+Copyright (c) 2026 Damngamerz
+
+The Grafana dashboard in examples/grafana-lgtm/dashboard.json is adapted from:
+
+  pi-otel
+  https://github.com/NikiforovAll/pi-otel
+  Copyright 2026 Oleksii Nikiforov
+  Licensed under the Apache License, Version 2.0.
+
+The adapted dashboard has been modified for @damngamerz/pi-otel metrics,
+evaluation panels, privacy defaults, and local deployment conventions.
+The complete Apache License 2.0 text is included at LICENSES/Apache-2.0.txt.
+
+All original @damngamerz/pi-otel source code is licensed under the MIT License.

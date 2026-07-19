@@ -1,0 +1,6 @@
+SPDX-License-Identifier: Apache-2.0
+
+The dashboard.json file is adapted from https://github.com/NikiforovAll/pi-otel,
+Copyright 2026 Oleksii Nikiforov, and remains subject to the Apache License 2.0.
+
+See ../../NOTICE and ../../LICENSES/Apache-2.0.txt.
