@@ -15,6 +15,12 @@ Baseline telemetry never contains prompts, responses, thinking, provider payload
 
 Remote evaluation changes that boundary by sending the latest user request and assistant text to the configured judge model. It is disabled by default, content-limited, deduplicated, and blocked when likely credentials or private keys are detected. See [the privacy model](docs/privacy.md).
 
+## Quick preview
+
+![pi-otel Grafana dashboard](./examples/grafana-lgtm/dashboard-screenshot.png)
+
+The example telemetry Grafana stack ships with a pre-built dashboard showing real-time telemetry.
+
 ## Install
 
 ```bash

@@ -1,4 +1,4 @@
-import { SpanKind, SpanStatusCode, context, trace, type Context, type Span } from "@opentelemetry/api";
+import { SpanKind, SpanStatusCode, context, trace, type Context, type Span, type SpanContext } from "@opentelemetry/api";
 import type { EvaluationBatch } from "../evaluation/types.js";
 import { safeTelemetryIdentifier } from "../privacy/sanitization.js";
 import { BASE_GEN_AI_ATTRIBUTES, modelAttributes } from "./attributes.js";
@@ -51,6 +51,7 @@ export class TelemetryRuntime {
 	private agentSpan: Span | undefined;
 	private agentContext: Context = context.active();
 	private lastCompletedAgentContext: Context | undefined;
+	private lastAgentSpanContext: SpanContext | undefined;
 	private turnSpan: Span | undefined;
 	private turnContext: Context = context.active();
 	private activeLlm: ActiveLlm | undefined;
@@ -251,6 +252,7 @@ export class TelemetryRuntime {
 			"gen_ai.operation.name": "invoke_agent",
 		});
 		this.lastCompletedAgentContext = this.agentContext;
+		this.lastAgentSpanContext = this.agentSpan.spanContext();
 		this.agentSpan.setStatus({ code: SpanStatusCode.OK });
 		this.agentSpan.end();
 		this.agentSpan = undefined;
@@ -281,17 +283,21 @@ export class TelemetryRuntime {
 		}
 		this.stats.evaluationRuns++;
 		this.stats.evaluationCostUsd += batch.usage.costUsd;
+		const spanOptions: Parameters<typeof this.providers.tracer.startSpan>[1] & Record<string, unknown> = {
+			kind: SpanKind.CLIENT,
+			attributes: {
+				...attributes,
+				"gen_ai.usage.input_tokens": batch.usage.input,
+				"gen_ai.usage.output_tokens": batch.usage.output,
+				"pi.cost.usd": batch.usage.costUsd,
+			},
+		};
+		if (this.lastAgentSpanContext) {
+			spanOptions.links = [{ context: this.lastAgentSpanContext }];
+		}
 		const span = this.providers.tracer.startSpan(
 			`evaluate ${model}`,
-			{
-				kind: SpanKind.CLIENT,
-				attributes: {
-					...attributes,
-					"gen_ai.usage.input_tokens": batch.usage.input,
-					"gen_ai.usage.output_tokens": batch.usage.output,
-					"pi.cost.usd": batch.usage.costUsd,
-				},
-			},
+			spanOptions,
 			this.lastCompletedAgentContext ?? this.sessionContext,
 		);
 		for (const result of batch.scores) {

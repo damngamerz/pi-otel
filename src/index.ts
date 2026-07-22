@@ -1,5 +1,6 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { registerFlushCommand } from "./commands/flush.js";
+import { registerHistoryCommand } from "./commands/history.js";
 import { registerStatusCommand } from "./commands/status.js";
 import { ConfigError, resolveConfig, type PiOtelConfig } from "./config.js";
 import { runRemoteEvaluation } from "./evaluation/evaluator.js";
@@ -11,7 +12,7 @@ import { containsLikelySecret } from "./privacy/secret-detector.js";
 import { TelemetryProviders } from "./telemetry/providers.js";
 import { TelemetryRuntime } from "./telemetry/traces.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
 const STATUS_ID = "damngamerz-pi-otel";
 const JUDGE_STATUS_ID = "damngamerz-pi-otel-judge";
 
@@ -107,6 +108,8 @@ export default function piOtel(pi: ExtensionAPI): void {
 			await evaluateLatest(ctx, true);
 		},
 	});
+
+	registerHistoryCommand(pi, (ctx, force) => evaluateLatest(ctx, force));
 
 	pi.on("session_start", async (_event, ctx) => {
 		try {

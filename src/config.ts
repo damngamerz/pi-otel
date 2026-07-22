@@ -14,6 +14,8 @@ export interface PiOtelConfig {
 		traces: boolean;
 		metrics: boolean;
 	};
+	provider?: string;
+	model?: string;
 	evaluation: {
 		mode: EvaluationMode;
 		sampleRate: number;
@@ -31,6 +33,8 @@ interface PartialPiOtelConfig {
 	headers?: Record<string, string>;
 	serviceName?: string;
 	signals?: Partial<PiOtelConfig["signals"]>;
+	provider?: string;
+	model?: string;
 	evaluation?: Partial<PiOtelConfig["evaluation"]>;
 }
 
@@ -111,7 +115,7 @@ export function validateSettingsFile(value: unknown, source = "settings"): Setti
 	const raw = value.piOtel;
 	assertAllowedKeys(
 		raw,
-		["enabled", "endpoint", "allowRemoteEndpoint", "headers", "serviceName", "signals", "evaluation"],
+		["enabled", "endpoint", "allowRemoteEndpoint", "headers", "serviceName", "signals", "provider", "model", "evaluation"],
 		"piOtel",
 	);
 	const parsed: PartialPiOtelConfig = {};
@@ -123,6 +127,12 @@ export function validateSettingsFile(value: unknown, source = "settings"): Setti
 	if (raw.headers !== undefined) parsed.headers = validateHeaders(raw.headers);
 	if (raw.serviceName !== undefined) {
 		parsed.serviceName = requireString(raw.serviceName, "piOtel.serviceName");
+	}
+	if (raw.provider !== undefined) {
+		parsed.provider = requireString(raw.provider, "piOtel.provider");
+	}
+	if (raw.model !== undefined) {
+		parsed.model = validateModel(requireString(raw.model, "piOtel.model"));
 	}
 	if (raw.signals !== undefined) {
 		if (!isRecord(raw.signals)) throw new ConfigError("piOtel.signals must be an object");
@@ -254,6 +264,21 @@ export function validateEndpoint(endpoint: string, allowRemoteEndpoint: boolean)
 	return `${url.protocol}//${url.host}`;
 }
 
+/**
+ * Validates a model string identifier.
+ * Must be non-empty, contain no whitespace, path separators, or "..".
+ * Returns the trimmed string on success.
+ */
+export function validateModel(model: string): string {
+	if (!model.trim()) throw new ConfigError("piOtel.model must be a non-empty string");
+	if (/\s/.test(model)) throw new ConfigError("piOtel.model must not contain whitespace");
+	if (model.includes("..")) throw new ConfigError("piOtel.model must not contain path sequences");
+	if (model.includes("://")) throw new ConfigError("piOtel.model must not contain URL schemes");
+	if (model.startsWith("/")) throw new ConfigError("piOtel.model must not start with a path separator");
+	if (model.startsWith("\\\\")) throw new ConfigError("piOtel.model must not start with a UNC path");
+	return model.trim();
+}
+
 export function resolveConfigFromSources(
 	globalSettingsInput: unknown,
 	projectSettingsInput: unknown,
@@ -286,6 +311,12 @@ export function resolveConfigFromSources(
 			...parseHeaders(env.OTEL_EXPORTER_OTLP_HEADERS),
 		},
 		serviceName: env.OTEL_SERVICE_NAME ?? config.serviceName,
+		...((env.PI_OTEL_PROVIDER ?? config.provider) !== undefined
+			? { provider: env.PI_OTEL_PROVIDER ?? config.provider }
+			: {}),
+		...((env.PI_OTEL_MODEL ?? config.model) !== undefined
+			? { model: env.PI_OTEL_MODEL ?? config.model }
+			: {}),
 		signals: {
 			traces: envBoolean(env.PI_OTEL_TRACES) ?? config.signals.traces,
 			metrics: envBoolean(env.PI_OTEL_METRICS) ?? config.signals.metrics,

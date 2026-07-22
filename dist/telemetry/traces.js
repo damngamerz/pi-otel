@@ -21,6 +21,7 @@ export class TelemetryRuntime {
     agentSpan;
     agentContext = context.active();
     lastCompletedAgentContext;
+    lastAgentSpanContext;
     turnSpan;
     turnContext = context.active();
     activeLlm;
@@ -195,6 +196,7 @@ export class TelemetryRuntime {
             "gen_ai.operation.name": "invoke_agent",
         });
         this.lastCompletedAgentContext = this.agentContext;
+        this.lastAgentSpanContext = this.agentSpan.spanContext();
         this.agentSpan.setStatus({ code: SpanStatusCode.OK });
         this.agentSpan.end();
         this.agentSpan = undefined;
@@ -224,7 +226,7 @@ export class TelemetryRuntime {
         }
         this.stats.evaluationRuns++;
         this.stats.evaluationCostUsd += batch.usage.costUsd;
-        const span = this.providers.tracer.startSpan(`evaluate ${model}`, {
+        const spanOptions = {
             kind: SpanKind.CLIENT,
             attributes: {
                 ...attributes,
@@ -232,7 +234,11 @@ export class TelemetryRuntime {
                 "gen_ai.usage.output_tokens": batch.usage.output,
                 "pi.cost.usd": batch.usage.costUsd,
             },
-        }, this.lastCompletedAgentContext ?? this.sessionContext);
+        };
+        if (this.lastAgentSpanContext) {
+            spanOptions.links = [{ context: this.lastAgentSpanContext }];
+        }
+        const span = this.providers.tracer.startSpan(`evaluate ${model}`, spanOptions, this.lastCompletedAgentContext ?? this.sessionContext);
         for (const result of batch.scores) {
             if (result.score < 0 || result.score > 1)
                 continue;

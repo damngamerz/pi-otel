@@ -1,6 +1,12 @@
 import { createConnection } from "node:net";
 function probe(endpoint, timeoutMs = 500) {
-    const url = new URL(endpoint);
+    let url;
+    try {
+        url = new URL(endpoint);
+    }
+    catch {
+        return Promise.resolve(false);
+    }
     const port = url.port ? Number(url.port) : url.protocol === "https:" ? 443 : 80;
     return new Promise((resolve) => {
         const socket = createConnection({ host: url.hostname, port });
@@ -28,7 +34,13 @@ export function registerStatusCommand(pi, getConfig, getRuntime) {
                 ctx.ui.notify("Pi OTel is not initialized for this session.", "warning");
                 return;
             }
-            const reachable = await probe(config.endpoint);
+            let reachable;
+            try {
+                reachable = await probe(config.endpoint);
+            }
+            catch {
+                reachable = false;
+            }
             const stats = runtime.stats;
             ctx.ui.notify([
                 `OTLP:        ${config.endpoint} (${reachable ? "reachable" : "unreachable"})`,

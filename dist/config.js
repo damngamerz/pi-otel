@@ -71,7 +71,7 @@ export function validateSettingsFile(value, source = "settings") {
     if (!isRecord(value.piOtel))
         throw new ConfigError("piOtel must be an object");
     const raw = value.piOtel;
-    assertAllowedKeys(raw, ["enabled", "endpoint", "allowRemoteEndpoint", "headers", "serviceName", "signals", "evaluation"], "piOtel");
+    assertAllowedKeys(raw, ["enabled", "endpoint", "allowRemoteEndpoint", "headers", "serviceName", "signals", "provider", "model", "evaluation"], "piOtel");
     const parsed = {};
     if (raw.enabled !== undefined)
         parsed.enabled = requireBoolean(raw.enabled, "piOtel.enabled");
@@ -84,6 +84,12 @@ export function validateSettingsFile(value, source = "settings") {
         parsed.headers = validateHeaders(raw.headers);
     if (raw.serviceName !== undefined) {
         parsed.serviceName = requireString(raw.serviceName, "piOtel.serviceName");
+    }
+    if (raw.provider !== undefined) {
+        parsed.provider = requireString(raw.provider, "piOtel.provider");
+    }
+    if (raw.model !== undefined) {
+        parsed.model = validateModel(requireString(raw.model, "piOtel.model"));
     }
     if (raw.signals !== undefined) {
         if (!isRecord(raw.signals))
@@ -213,6 +219,26 @@ export function validateEndpoint(endpoint, allowRemoteEndpoint) {
     }
     return `${url.protocol}//${url.host}`;
 }
+/**
+ * Validates a model string identifier.
+ * Must be non-empty, contain no whitespace, path separators, or "..".
+ * Returns the trimmed string on success.
+ */
+export function validateModel(model) {
+    if (!model.trim())
+        throw new ConfigError("piOtel.model must be a non-empty string");
+    if (/\s/.test(model))
+        throw new ConfigError("piOtel.model must not contain whitespace");
+    if (model.includes(".."))
+        throw new ConfigError("piOtel.model must not contain path sequences");
+    if (model.includes("://"))
+        throw new ConfigError("piOtel.model must not contain URL schemes");
+    if (model.startsWith("/"))
+        throw new ConfigError("piOtel.model must not start with a path separator");
+    if (model.startsWith("\\\\"))
+        throw new ConfigError("piOtel.model must not start with a UNC path");
+    return model.trim();
+}
 export function resolveConfigFromSources(globalSettingsInput, projectSettingsInput, env = process.env) {
     const globalSettings = validateSettingsFile(globalSettingsInput, "global settings");
     const projectSettings = validateSettingsFile(projectSettingsInput, "project settings");
@@ -239,6 +265,12 @@ export function resolveConfigFromSources(globalSettingsInput, projectSettingsInp
             ...parseHeaders(env.OTEL_EXPORTER_OTLP_HEADERS),
         },
         serviceName: env.OTEL_SERVICE_NAME ?? config.serviceName,
+        ...((env.PI_OTEL_PROVIDER ?? config.provider) !== undefined
+            ? { provider: env.PI_OTEL_PROVIDER ?? config.provider }
+            : {}),
+        ...((env.PI_OTEL_MODEL ?? config.model) !== undefined
+            ? { model: env.PI_OTEL_MODEL ?? config.model }
+            : {}),
         signals: {
             traces: envBoolean(env.PI_OTEL_TRACES) ?? config.signals.traces,
             metrics: envBoolean(env.PI_OTEL_METRICS) ?? config.signals.metrics,

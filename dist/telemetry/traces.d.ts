@@ -20,6 +20,7 @@ export declare class TelemetryRuntime {
     private agentSpan;
     private agentContext;
     private lastCompletedAgentContext;
+    private lastAgentSpanContext;
     private turnSpan;
     private turnContext;
     private activeLlm;

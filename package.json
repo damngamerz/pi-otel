@@ -1,6 +1,6 @@
 {
 	"name": "@damngamerz/pi-otel",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Privacy-conscious OpenTelemetry traces, metrics, and optional LLM evaluation for Pi",
 	"type": "module",
 	"license": "MIT",
@@ -21,7 +21,9 @@
 		"gen-ai",
 		"llm",
 		"evaluation",
-		"observability"
+		"observability",
+		"monitoring",
+		"grafana"
 	],
 	"engines": {
 		"node": ">=20.0.0"
@@ -49,7 +51,8 @@
 	"pi": {
 		"extensions": [
 			"./dist/index.js"
-		]
+		],
+		"image": "https://pi.dev/packages/@damngamerz/pi-otel"
 	},
 	"scripts": {
 		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",

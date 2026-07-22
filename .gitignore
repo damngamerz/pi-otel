@@ -7,3 +7,4 @@ coverage/
 *.tgz
 sbom.cdx.json
 SHA256SUMS
+.pi-subagents/
