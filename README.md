@@ -30,7 +30,7 @@ pi install npm:@damngamerz/pi-otel
 For a pinned install:
 
 ```bash
-pi install npm:@damngamerz/pi-otel@0.1.0
+pi install npm:@damngamerz/pi-otel@0.1.1
 ```
 
 ## Local Grafana quick start
