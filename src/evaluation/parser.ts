@@ -10,11 +10,17 @@ export function parseJudgeResult(text: string): EvaluationResult {
 	const lastBrace = text.lastIndexOf("}");
 	const candidateText =
 		fenced ?? (firstBrace >= 0 && lastBrace > firstBrace ? text.slice(firstBrace, lastBrace + 1) : text);
-	const parsed = JSON.parse(candidateText) as {
+	let parsed: {
 		scores?: Array<{ name?: unknown; score?: unknown; label?: unknown }>;
 		summary?: unknown;
 		issues?: unknown;
 	};
+	try {
+		parsed = JSON.parse(candidateText);
+	} catch {
+		const preview = candidateText.length > 200 ? candidateText.slice(0, 200) + "..." : candidateText;
+		throw new Error(`Judge returned unparseable JSON: ${preview}`);
+	}
 	const scores: EvaluationScore[] = (parsed.scores ?? []).map((entry) => {
 		if (typeof entry.score !== "number" || !Number.isFinite(entry.score)) {
 			throw new Error("Judge returned a non-numeric score");

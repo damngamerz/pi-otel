@@ -2,7 +2,7 @@
 
 Privacy-conscious OpenTelemetry traces, metrics, and optional response evaluation for the [Pi coding agent](https://pi.dev).
 
-- GenAI-semantic traces for agent, LLM, and tool activity
+- GenAI semantic traces for agent, LLM, and tool activity
 - token, cost, latency, error, and tool metrics
 - optional manual, sampled, or always-on LLM evaluation
 - correlated `gen_ai.evaluation.result` events
@@ -82,10 +82,15 @@ Primary metrics include:
 - `gen_ai.client.tool_calls_per_operation`
 - `gen_ai.client.tool.calls`
 - `gen_ai.evaluation.score`
+- `pi.agent.prompts`
+- `pi.agent.turns`
+- `pi.agent.tool.duration`
+- `pi.agent.tool.errors`
+- `pi.agent.session.duration`
 - `pi.agent.cost`
 - `pi.agent.time_to_first_token`
 
-See [metrics](docs/metrics.md) and [evaluation](docs/evaluation.md).
+See [metrics](docs/metrics.md) for the full reference.
 
 ## Security
 

@@ -98,7 +98,6 @@ Use a namespaced `piOtel` key to avoid collisions with other Pi extensions:
   "piOtel": {
     "enabled": true,
     "endpoint": "http://127.0.0.1:4318",
-    "protocol": "http/protobuf",
     "serviceName": "pi",
     "signals": {
       "traces": true,

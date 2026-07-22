@@ -4,7 +4,12 @@ import type { PiOtelConfig } from "../config.js";
 import type { TelemetryRuntime } from "../telemetry/traces.js";
 
 function probe(endpoint: string, timeoutMs = 500): Promise<boolean> {
-	const url = new URL(endpoint);
+	let url: URL;
+	try {
+		url = new URL(endpoint);
+	} catch {
+		return Promise.resolve(false);
+	}
 	const port = url.port ? Number(url.port) : url.protocol === "https:" ? 443 : 80;
 	return new Promise((resolve) => {
 		const socket = createConnection({ host: url.hostname, port });
@@ -36,7 +41,12 @@ export function registerStatusCommand(
 				ctx.ui.notify("Pi OTel is not initialized for this session.", "warning");
 				return;
 			}
-			const reachable = await probe(config.endpoint);
+			let reachable: boolean;
+			try {
+				reachable = await probe(config.endpoint);
+			} catch {
+				reachable = false;
+			}
 			const stats = runtime.stats;
 			ctx.ui.notify(
 				[

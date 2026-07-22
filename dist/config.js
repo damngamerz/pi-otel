@@ -140,6 +140,8 @@ function envBoolean(value) {
     if (value == null)
         return undefined;
     const normalized = value.trim().toLowerCase();
+    if (normalized === "")
+        return undefined;
     if (["1", "true", "yes", "on"].includes(normalized))
         return true;
     if (["0", "false", "no", "off"].includes(normalized))
@@ -254,7 +256,18 @@ export function resolveConfigFromSources(globalSettingsInput, projectSettingsInp
 }
 export function resolveConfig(cwd, projectTrusted) {
     const globalSettings = readSettings(join(homedir(), ".pi", "agent", "settings.json"));
-    const projectSettings = projectTrusted ? readSettings(join(cwd, ".pi", "settings.json")) : undefined;
+    let projectSettings;
+    if (projectTrusted) {
+        try {
+            projectSettings = readSettings(join(cwd, ".pi", "settings.json"));
+        }
+        catch (error) {
+            if (error instanceof ConfigError) {
+                throw new ConfigError(`Failed to load project settings at ${join(cwd, ".pi", "settings.json")}: ${error.message}`);
+            }
+            throw error;
+        }
+    }
     return resolveConfigFromSources(globalSettings, projectSettings);
 }
 //# sourceMappingURL=config.js.map
