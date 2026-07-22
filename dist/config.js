@@ -71,7 +71,17 @@ export function validateSettingsFile(value, source = "settings") {
     if (!isRecord(value.piOtel))
         throw new ConfigError("piOtel must be an object");
     const raw = value.piOtel;
-    assertAllowedKeys(raw, ["enabled", "endpoint", "allowRemoteEndpoint", "headers", "serviceName", "signals", "provider", "model", "evaluation"], "piOtel");
+    assertAllowedKeys(raw, [
+        "enabled",
+        "endpoint",
+        "allowRemoteEndpoint",
+        "headers",
+        "serviceName",
+        "signals",
+        "provider",
+        "model",
+        "evaluation",
+    ], "piOtel");
     const parsed = {};
     if (raw.enabled !== undefined)
         parsed.enabled = requireBoolean(raw.enabled, "piOtel.enabled");

@@ -1,4 +1,12 @@
-import { SpanKind, SpanStatusCode, context, trace, type Context, type Span, type SpanContext } from "@opentelemetry/api";
+import {
+	SpanKind,
+	SpanStatusCode,
+	context,
+	trace,
+	type Context,
+	type Span,
+	type SpanContext,
+} from "@opentelemetry/api";
 import type { EvaluationBatch } from "../evaluation/types.js";
 import { safeTelemetryIdentifier } from "../privacy/sanitization.js";
 import { BASE_GEN_AI_ATTRIBUTES, modelAttributes } from "./attributes.js";

@@ -1,4 +1,4 @@
-import { SpanKind, SpanStatusCode, context, trace } from "@opentelemetry/api";
+import { SpanKind, SpanStatusCode, context, trace, } from "@opentelemetry/api";
 import { safeTelemetryIdentifier } from "../privacy/sanitization.js";
 import { BASE_GEN_AI_ATTRIBUTES, modelAttributes } from "./attributes.js";
 import { extractUsage } from "./usage.js";

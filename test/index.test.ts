@@ -38,6 +38,11 @@ test("registers the complete Pi lifecycle and command surface", () => {
 		"turn_end",
 		"turn_start",
 	]);
-	assert.deepEqual([...commands.keys()].sort(), ["otel-eval-history", "otel-eval-last", "otel-flush", "otel-status"]);
+	assert.deepEqual([...commands.keys()].sort(), [
+		"otel-eval-history",
+		"otel-eval-last",
+		"otel-flush",
+		"otel-status",
+	]);
 	assert.deepEqual(eventSubscriptions, []);
 });

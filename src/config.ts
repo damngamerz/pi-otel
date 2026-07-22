@@ -115,7 +115,17 @@ export function validateSettingsFile(value: unknown, source = "settings"): Setti
 	const raw = value.piOtel;
 	assertAllowedKeys(
 		raw,
-		["enabled", "endpoint", "allowRemoteEndpoint", "headers", "serviceName", "signals", "provider", "model", "evaluation"],
+		[
+			"enabled",
+			"endpoint",
+			"allowRemoteEndpoint",
+			"headers",
+			"serviceName",
+			"signals",
+			"provider",
+			"model",
+			"evaluation",
+		],
 		"piOtel",
 	);
 	const parsed: PartialPiOtelConfig = {};
