@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.2
+
+- feat: tolerant JSON parser fallback for judge responses
+- feat: add thinking-content detection in judge errors
+- feat: `reasoning: "off"` for judge calls
+- feat: increase judge maxTokens from 1_200 to 4_000
+- feat: Grafana URL shown in /otel-status output
+- build: bump @types/node to 25.9.5
+
 ## 0.1.1
 
 - fix: safe JSON.parse in judge parser (no judge-response leak in errors)

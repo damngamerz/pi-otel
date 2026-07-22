@@ -10,7 +10,7 @@ import { anonymize } from "./privacy/sanitization.js";
 import { containsLikelySecret } from "./privacy/secret-detector.js";
 import { TelemetryProviders } from "./telemetry/providers.js";
 import { TelemetryRuntime } from "./telemetry/traces.js";
-export const VERSION = "0.1.1";
+export const VERSION = "0.1.2";
 const STATUS_ID = "damngamerz-pi-otel";
 const JUDGE_STATUS_ID = "damngamerz-pi-otel-judge";
 export default function piOtel(pi) {

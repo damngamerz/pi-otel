@@ -1,4 +1,5 @@
 import { createConnection } from "node:net";
+const GRAFANA_URL = "http://127.0.0.1:33000";
 function probe(endpoint, timeoutMs = 500) {
     let url;
     try {
@@ -44,6 +45,7 @@ export function registerStatusCommand(pi, getConfig, getRuntime) {
             const stats = runtime.stats;
             ctx.ui.notify([
                 `OTLP:        ${config.endpoint} (${reachable ? "reachable" : "unreachable"})`,
+                `Grafana:     ${GRAFANA_URL}`,
                 `Evaluation:  ${config.evaluation.mode} via ${config.evaluation.provider}/${config.evaluation.model}`,
                 "Capture:     baseline metadata only; evaluation content follows the configured mode",
                 `Prompts:     ${stats.prompts}`,

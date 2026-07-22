@@ -1,6 +1,5 @@
 import { safeDimension } from "../privacy/sanitization.js";
 import type { EvaluationResult, EvaluationScore } from "./types.js";
-import { tolerantJsonParse } from "./tolerant-json.js";
 
 const REQUIRED_NAMES = ["task_success", "instruction_following", "relevance", "correctness"] as const;
 const VALID_LABELS = new Set(["poor", "fair", "good", "excellent"]);
@@ -19,12 +18,8 @@ export function parseJudgeResult(text: string): EvaluationResult {
 	try {
 		parsed = JSON.parse(candidateText);
 	} catch {
-		try {
-			parsed = tolerantJsonParse(candidateText) as typeof parsed;
-		} catch {
-			const preview = candidateText.length > 200 ? candidateText.slice(0, 200) + "..." : candidateText;
-			throw new Error(`Judge returned unparseable JSON: ${preview}`);
-		}
+		const preview = candidateText.length > 200 ? candidateText.slice(0, 200) + "..." : candidateText;
+		throw new Error(`Judge returned unparseable JSON: ${preview}`);
 	}
 	const scores: EvaluationScore[] = (parsed.scores ?? []).map((entry) => {
 		if (typeof entry.score !== "number" || !Number.isFinite(entry.score)) {

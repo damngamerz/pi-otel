@@ -30,15 +30,25 @@ export async function runRemoteEvaluation(ctx, pair, config) {
         apiKey: auth.apiKey,
         ...(auth.headers ? { headers: auth.headers } : {}),
         ...(auth.env ? { env: auth.env } : {}),
-        maxTokens: 1_200,
+        maxTokens: 4_000,
         cacheRetention: "none",
         timeoutMs: 90_000,
         maxRetries: 1,
         signal: AbortSignal.timeout(90_000),
+        reasoning: "off",
     });
     const responseText = messageText(response);
-    if (!responseText)
-        throw new Error(`Judge returned no text (${response.stopReason})`);
+    if (!responseText) {
+        const content = response.content;
+        const hadThinking = Array.isArray(content) &&
+            content.some((part) => !!part &&
+                typeof part === "object" &&
+                "type" in part &&
+                part.type === "thinking" &&
+                typeof part.thinking === "string" &&
+                part.thinking.trim().length > 0);
+        throw new Error(`Judge returned no text (stopReason=${response.stopReason}${hadThinking ? "; thinking content was produced but no text" : ""})`);
+    }
     const result = parseJudgeResult(responseText);
     return {
         batch: {

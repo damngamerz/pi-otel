@@ -3,6 +3,8 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import type { PiOtelConfig } from "../config.js";
 import type { TelemetryRuntime } from "../telemetry/traces.js";
 
+const GRAFANA_URL = "http://127.0.0.1:33000";
+
 function probe(endpoint: string, timeoutMs = 500): Promise<boolean> {
 	let url: URL;
 	try {
@@ -51,6 +53,7 @@ export function registerStatusCommand(
 			ctx.ui.notify(
 				[
 					`OTLP:        ${config.endpoint} (${reachable ? "reachable" : "unreachable"})`,
+					`Grafana:     ${GRAFANA_URL}`,
 					`Evaluation:  ${config.evaluation.mode} via ${config.evaluation.provider}/${config.evaluation.model}`,
 					"Capture:     baseline metadata only; evaluation content follows the configured mode",
 					`Prompts:     ${stats.prompts}`,
