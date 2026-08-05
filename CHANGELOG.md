@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.3
+
+- build: bump opentelemetry group (sdk 2.10, otlp-http 0.221)
+- build: bump @earendil-works/pi-ai to 0.83.0
+- build: bump @earendil-works/pi-coding-agent to 0.83.0
+- build: bump @biomejs/biome to 2.5.6
+- build: bump actions/checkout to 7.0.1
+- build: bump github/codeql-action to 4.37.4
+
 ## 0.1.2
 
 - feat: tolerant JSON parser fallback for judge responses
