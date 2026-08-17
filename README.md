@@ -44,7 +44,7 @@ cd examples/grafana-lgtm
 docker compose up -d
 ```
 
-Open <http://127.0.0.1:33000/d/damngamerz-pi-otel/atdamngamerz-pi-otel>.
+Open <http://127.0.0.1:33000/d/pi-local-otel/pi-local-opentelemetry>.
 
 The extension exports OTLP/HTTP to `http://127.0.0.1:4318` by default.
 

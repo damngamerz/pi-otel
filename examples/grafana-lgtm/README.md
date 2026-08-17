@@ -8,7 +8,7 @@ This optional Compose stack provides Grafana, Tempo, Prometheus, Loki, and an Op
 docker compose up -d
 ```
 
-Open <http://127.0.0.1:33000/d/damngamerz-pi-otel/atdamngamerz-pi-otel>.
+Open <http://127.0.0.1:33000/d/pi-local-otel/pi-local-opentelemetry>.
 
 Default endpoints:
 
