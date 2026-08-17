@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.4
+
+- docs: add Grafana dashboard screenshots to README and pi package gallery preview
+- docs: correct Grafana dashboard URL to `pi-local-otel`
+- build: bump @biomejs/biome to 2.5.8
+- build: bump @earendil-works/pi-ai to 0.84.1
+- build: bump @earendil-works/pi-coding-agent to 0.84.2
+- build: bump tsx to 4.23.12
+- build: bump github/codeql-action to 4.37.7
+
 ## 0.1.3
 
 - build: bump opentelemetry group (sdk 2.10, otlp-http 0.221)
