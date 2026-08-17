@@ -19,7 +19,11 @@ Remote evaluation changes that boundary by sending the latest user request and a
 
 ![pi-otel Grafana dashboard](./examples/grafana-lgtm/dashboard-screenshot.png)
 
-The example telemetry Grafana stack ships with a pre-built dashboard showing real-time telemetry.
+The example telemetry Grafana stack ships with a prebuilt dashboard showing real-time telemetry.
+
+![pi-otel trace timeline](./examples/grafana-lgtm/dashboard-tracing.png)
+
+*Trace timeline showing correlated `gen_ai.query`, `gen_ai.response`, and `gen_ai.evaluation.result` events.*
 
 ## Install
 
