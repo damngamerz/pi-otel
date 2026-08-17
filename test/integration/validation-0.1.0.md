@@ -25,7 +25,7 @@ The authenticated evaluation smoke test is intentionally manual because CI has n
 
 ## Fresh Grafana LGTM example
 
-The packaged Compose example was started on alternate loopback ports and reached `healthy`. Grafana provisioned dashboard UID `damngamerz-pi-otel` at `/d/damngamerz-pi-otel/atdamngamerz-pi-otel`. The stack was removed after verification.
+The packaged Compose example was started on alternate loopback ports and reached `healthy`. Grafana provisioned dashboard UID `pi-local-otel` at `/d/pi-local-otel/pi-local-opentelemetry`. The stack was removed after verification.
 
 ## Release status
 

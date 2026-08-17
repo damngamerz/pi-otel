@@ -1,6 +1,6 @@
 {
-  "title": "@damngamerz/pi-otel",
-  "uid": "damngamerz-pi-otel",
+  "title": "Pi Local OpenTelemetry",
+  "uid": "pi-local-otel",
   "schemaVersion": 38,
   "version": 1,
   "editable": true,

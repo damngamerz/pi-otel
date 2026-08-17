@@ -52,7 +52,7 @@
 		"extensions": [
 			"./dist/index.js"
 		],
-		"image": "https://pi.dev/packages/@damngamerz/pi-otel"
+		"image": "https://raw.githubusercontent.com/damngamerz/pi-otel/main/examples/grafana-lgtm/dashboard-screenshot.png"
 	},
 	"scripts": {
 		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
