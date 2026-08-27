@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.5
+
+- build: bump @biomejs/biome to 2.5.9
+- build: bump @earendil-works/pi-ai to 0.84.2
+
 ## 0.1.4
 
 - docs: add Grafana dashboard screenshots to README and pi package gallery preview
