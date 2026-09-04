@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.6
+
+- build: bump @biomejs/biome to 2.5.10
+- build: bump @earendil-works/pi-ai to 0.84.3
+- build: bump @earendil-works/pi-coding-agent to 0.84.3
+- build: bump github/codeql-action to 4.37.9
+
 ## 0.1.5
 
 - build: bump @biomejs/biome to 2.5.9
