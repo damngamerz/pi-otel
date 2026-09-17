@@ -1,6 +1,6 @@
 {
 	"name": "@damngamerz/pi-otel",
-	"version": "0.1.6",
+	"version": "0.1.7",
 	"description": "Privacy-conscious OpenTelemetry traces, metrics, and optional LLM evaluation for Pi",
 	"type": "module",
 	"license": "MIT",
