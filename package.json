@@ -84,7 +84,7 @@
 		"@earendil-works/pi-ai": "0.84.4",
 		"@earendil-works/pi-coding-agent": "0.84.4",
 		"@types/node": "25.9.8",
-		"tsx": "4.23.13",
+		"tsx": "4.23.15",
 		"typescript": "7.0.2"
 	}
 }
