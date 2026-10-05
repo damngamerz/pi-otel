@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.8
+
+- build: bump @earendil-works/pi-ai and pi-coding-agent to 0.99.2
+- build: bump @biomejs/biome to 2.5.15
+- build: bump tsx to 4.23.15
+- build: bump @types/node to 25.9.8
+- build: bump github/codeql-action to 4.38.2
+
 ## 0.1.7
 
 - build: bump opentelemetry group (sdk 2.11, otlp-http 0.222)
