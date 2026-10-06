@@ -23,6 +23,12 @@ export interface PiOtelConfig {
 		model: string;
 		maxCharsPerField: number;
 		blockLikelySecrets: boolean;
+		decision?: {
+			provider?: string;
+			apiKey?: string;
+			baseURL?: string;
+			confidenceFloor?: number;
+		};
 	};
 }
 
@@ -160,7 +166,7 @@ export function validateSettingsFile(value: unknown, source = "settings"): Setti
 		if (!isRecord(raw.evaluation)) throw new ConfigError("piOtel.evaluation must be an object");
 		assertAllowedKeys(
 			raw.evaluation,
-			["mode", "sampleRate", "provider", "model", "maxCharsPerField", "blockLikelySecrets"],
+			["mode", "sampleRate", "provider", "model", "maxCharsPerField", "blockLikelySecrets", "decision"],
 			"piOtel.evaluation",
 		);
 		const evaluation: Partial<PiOtelConfig["evaluation"]> = {};
@@ -185,6 +191,39 @@ export function validateSettingsFile(value: unknown, source = "settings"): Setti
 				raw.evaluation.blockLikelySecrets,
 				"piOtel.evaluation.blockLikelySecrets",
 			);
+		}
+		if (raw.evaluation.decision !== undefined) {
+			if (!isRecord(raw.evaluation.decision)) {
+				throw new ConfigError("piOtel.evaluation.decision must be an object");
+			}
+			assertAllowedKeys(
+				raw.evaluation.decision,
+				["provider", "apiKey", "baseURL", "confidenceFloor"],
+				"piOtel.evaluation.decision",
+			);
+			const decision: NonNullable<PiOtelConfig["evaluation"]["decision"]> = {};
+			if (raw.evaluation.decision.provider !== undefined) {
+				decision.provider = requireString(
+					raw.evaluation.decision.provider,
+					"piOtel.evaluation.decision.provider",
+				);
+			}
+			if (raw.evaluation.decision.apiKey !== undefined) {
+				decision.apiKey = requireString(raw.evaluation.decision.apiKey, "piOtel.evaluation.decision.apiKey");
+			}
+			if (raw.evaluation.decision.baseURL !== undefined) {
+				decision.baseURL = requireString(
+					raw.evaluation.decision.baseURL,
+					"piOtel.evaluation.decision.baseURL",
+				);
+			}
+			if (raw.evaluation.decision.confidenceFloor !== undefined) {
+				decision.confidenceFloor = requireNumber(
+					raw.evaluation.decision.confidenceFloor,
+					"piOtel.evaluation.decision.confidenceFloor",
+				);
+			}
+			evaluation.decision = decision;
 		}
 		parsed.evaluation = evaluation;
 	}

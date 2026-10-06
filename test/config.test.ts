@@ -79,3 +79,71 @@ test("validates sampling and content limits", () => {
 		ConfigError,
 	);
 });
+
+test("accepts and parses the piOtel.evaluation.decision block", () => {
+	const resolved = resolveConfigFromSources(
+		{
+			piOtel: {
+				evaluation: {
+					provider: "decision",
+					model: "sference/clef",
+					decision: {
+						provider: "requesty",
+						apiKey: "explicit-key",
+						baseURL: "https://gateway.example.com/v1",
+						confidenceFloor: 0.6,
+					},
+				},
+			},
+		},
+		undefined,
+		{},
+	);
+	assert.equal(resolved.evaluation.provider, "decision");
+	assert.equal(resolved.evaluation.model, "sference/clef");
+	assert.equal(resolved.evaluation.decision?.provider, "requesty");
+	assert.equal(resolved.evaluation.decision?.apiKey, "explicit-key");
+	assert.equal(resolved.evaluation.decision?.baseURL, "https://gateway.example.com/v1");
+	assert.equal(resolved.evaluation.decision?.confidenceFloor, 0.6);
+});
+
+test("decision block is optional and defaults stay untouched", () => {
+	const resolved = resolveConfigFromSources({ piOtel: { evaluation: { mode: "manual" } } }, undefined, {});
+	assert.equal(resolved.evaluation.decision, undefined);
+});
+
+test("rejects unknown keys inside piOtel.evaluation.decision", () => {
+	assert.throws(
+		() =>
+			resolveConfigFromSources(
+				{ piOtel: { evaluation: { decision: { provider: "requesty", unknownKey: "x" } } } },
+				undefined,
+				{},
+			),
+		/piOtel\.evaluation\.decision/,
+	);
+});
+
+test("rejects non-object piOtel.evaluation.decision", () => {
+	assert.throws(
+		() => resolveConfigFromSources({ piOtel: { evaluation: { decision: "requesty" } } }, undefined, {}),
+		/decision must be an object/,
+	);
+});
+
+test("rejects wrongly-typed decision fields", () => {
+	assert.throws(
+		() =>
+			resolveConfigFromSources(
+				{ piOtel: { evaluation: { decision: { confidenceFloor: "high" } } } },
+				undefined,
+				{},
+			),
+		/piOtel\.evaluation\.decision\.confidenceFloor/,
+	);
+	assert.throws(
+		() =>
+			resolveConfigFromSources({ piOtel: { evaluation: { decision: { apiKey: 12345 } } } }, undefined, {}),
+		/piOtel\.evaluation\.decision\.apiKey/,
+	);
+});
