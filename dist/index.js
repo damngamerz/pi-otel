@@ -3,6 +3,7 @@ import { registerHistoryCommand } from "./commands/history.js";
 import { registerStatusCommand } from "./commands/status.js";
 import { ConfigError, resolveConfig } from "./config.js";
 import { runRemoteEvaluation } from "./evaluation/evaluator.js";
+import { runDecisionEvaluation, resolveDecisionConfig } from "./evaluation/decision-evaluator.js";
 import { EvaluationDeduplicator, shouldEvaluate } from "./evaluation/sampling.js";
 import { isAssistantStreamUpdate } from "./lifecycle.js";
 import { isAssistantMessage, latestEvaluationPair } from "./privacy/content-policy.js";
@@ -53,7 +54,18 @@ export default function piOtel(pi) {
         evaluationInFlight = true;
         ctx.ui.setStatus(JUDGE_STATUS_ID, ctx.ui.theme.fg("warning", `Evaluating with ${config.evaluation.provider}/${config.evaluation.model}`));
         try {
-            const evaluation = await runRemoteEvaluation(ctx, pair, config.evaluation);
+            const isDecision = config.evaluation.provider === "decision";
+            const evaluation = isDecision
+                ? await (async () => {
+                    const decisionConfig = resolveDecisionConfig(config.evaluation);
+                    const result = await runDecisionEvaluation(pair, decisionConfig);
+                    return {
+                        batch: result.batch,
+                        result: { scores: result.scores, summary: result.summary, issues: result.issues },
+                        truncated: result.batch.usage.input > decisionConfig.maxCharsPerField * 2,
+                    };
+                })()
+                : await runRemoteEvaluation(ctx, pair, config.evaluation);
             runtime.recordEvaluation(evaluation.batch);
             await runtime.forceFlush();
             ctx.ui.notify([
