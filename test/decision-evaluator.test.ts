@@ -287,6 +287,7 @@ test("resolveDecisionConfig validates model, api key, and provider", () => {
 				model: "",
 				maxCharsPerField: 12_000,
 				blockLikelySecrets: true,
+				decision: { provider: "requesty", apiKey: "explicit-key" },
 			} as Parameters<typeof resolveDecisionConfig>[0]),
 		/model is required/,
 	);
@@ -300,7 +301,7 @@ test("resolveDecisionConfig validates model, api key, and provider", () => {
 				model: "x",
 				maxCharsPerField: 12_000,
 				blockLikelySecrets: true,
-				decision: { provider: "unknown-provider" },
+				decision: { provider: "unknown-provider", apiKey: "explicit-key" },
 			} as Parameters<typeof resolveDecisionConfig>[0]),
 		/provider must be one of/,
 	);
