@@ -253,13 +253,27 @@ function parseDecisionPayload(
 			throw new Error(`Decision model returned unexpected answer type for ${name}`);
 		}
 		// Two score shapes exist across providers:
-		// - chat (Requesty): `score` is the chosen index; derive the value from
-		//   the probability distribution over criterion indices.
-		// - native (OpenRouter Decisions / TypeSafe): `score` is already the
-		//   probability-weighted position; use it directly.
+		// - chat (Requesty): `score` is the chosen criterion index; derive the
+		//   value from the probability distribution over criterion indices.
+		// - native (OpenRouter Decisions / TypeSafe): `score` is a probability-
+		//   weighted position on the 0..len(criteria)-1 scale; rescale to 0-1.
 		let value: number | null;
-		if (typeof typed.score === "number" && Number.isFinite(typed.score) && !Number.isInteger(typed.score)) {
-			value = Math.min(1, Math.max(0, typed.score));
+		const scoreNumber = typeof typed.score === "number" && Number.isFinite(typed.score) ? typed.score : null;
+		if (scoreNumber !== null && scoreNumber > 1) {
+			// Weighted position exceeding 1 proves a native 0..N-1 scale; rescale
+			// by the criterion count from the probabilities/legend.
+			const maxIndex = typed.probabilities
+				? Math.max(
+						0,
+						...Object.keys(typed.probabilities)
+							.map((k) => Number(k))
+							.filter(Number.isInteger),
+					)
+				: 0;
+			value = maxIndex > 0 ? scoreNumber / maxIndex : null;
+		} else if (scoreNumber !== null && typed.probabilities === undefined) {
+			// Plain float in 0..1 with no distribution (pure native float scale).
+			value = scoreNumber;
 		} else {
 			value = scoreValue(typed.probabilities);
 		}
