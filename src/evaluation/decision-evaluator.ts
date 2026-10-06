@@ -81,15 +81,39 @@ export function scoreValue(probabilities: Record<string, number> | undefined): n
 	return Math.min(1, Math.max(0, weighted / (count - 1) / total));
 }
 
-/** Provider profiles for OpenAI-compatible decision endpoints. */
+/**
+ * Provider profiles for decision-model endpoints.
+ *
+ * Two wire formats exist:
+ * - "chat": OpenAI chat-completions with response_format: {type:"questions"}
+ *   (Requesty style). State is embedded in a user message.
+ * - "native": dedicated decisions endpoint with {model, state, questions}
+ *   (OpenRouter /api/alpha/decisions and TypeSafe /v1/systemone). State is a
+ *   top-level field; answers come back in an `answers` map.
+ */
 export const DECISION_PROVIDERS = {
 	requesty: {
+		wire: "chat" as const,
 		baseURL: "https://router.requesty.ai/v1",
-		chatPath: "/chat/completions",
+		path: "/chat/completions",
 		apiKeyEnv: "REQUESTY_API_KEY",
 		responseFormatKey: "response_format",
 	},
+	openrouter: {
+		wire: "native" as const,
+		baseURL: "https://openrouter.ai/api",
+		path: "/alpha/decisions",
+		apiKeyEnv: "OPENROUTER_API_KEY",
+	},
+	typesafe: {
+		wire: "native" as const,
+		baseURL: "https://api.typesafe.ai/v1",
+		path: "/systemone",
+		apiKeyEnv: "TYPESAFE_API_KEY",
+	},
 } as const;
+
+export type DecisionProviderName = keyof typeof DECISION_PROVIDERS;
 
 export interface DecisionConfig {
 	providerName: string;
@@ -151,8 +175,16 @@ function truncateField(text: string, maxCharsPerField: number): string {
 	return text.slice(0, limit);
 }
 
-/** Extracts the assistant JSON object from a chat-completions payload. */
+/**
+ * Extracts the answers map from either wire format:
+ * - chat: choices[0].message.content is a JSON object of answers
+ * - native: a top-level `answers` object
+ */
 export function parseDecisionAnswer(payload: unknown): Record<string, unknown> {
+	const direct = payload as { answers?: unknown };
+	if (direct?.answers && typeof direct.answers === "object" && !Array.isArray(direct.answers)) {
+		return direct.answers as Record<string, unknown>;
+	}
 	const choices = (payload as { choices?: Array<{ message?: { content?: unknown } }> })?.choices;
 	const content = choices?.[0]?.message?.content;
 	if (typeof content !== "string" || content.trim() === "") {
@@ -170,18 +202,23 @@ export function parseDecisionAnswer(payload: unknown): Record<string, unknown> {
 	return parsed as Record<string, unknown>;
 }
 
-/** Maps chat-completions usage into the ModelUsage shape the telemetry layer expects. */
-function extractChatUsage(payload: unknown): ModelUsage {
-	const usage = (payload as { usage?: Record<string, number> })?.usage ?? {};
+/**
+ * Maps usage into the ModelUsage shape the telemetry layer expects.
+ * Handles both usage shapes: chat ({prompt_tokens, completion_tokens}) and
+ * native ({input_tokens, output_tokens, cost}).
+ */
+function extractUsageFromPayload(payload: unknown): ModelUsage {
+	const usage = (payload as { usage?: Record<string, unknown> })?.usage ?? {};
 	const model = (payload as { model?: string })?.model ?? "unknown";
+	const n = (value: unknown): number => (typeof value === "number" && Number.isFinite(value) ? value : 0);
 	return {
 		provider: "decision",
 		model,
-		input: usage.prompt_tokens ?? 0,
-		output: usage.completion_tokens ?? 0,
+		input: n(usage.prompt_tokens) || n(usage.input_tokens),
+		output: n(usage.completion_tokens) || n(usage.output_tokens),
 		cacheRead: 0,
 		cacheWrite: 0,
-		costUsd: usage.cost ?? 0,
+		costUsd: n(usage.cost),
 	};
 }
 
@@ -206,11 +243,26 @@ function parseDecisionPayload(
 	const issues: string[] = [];
 	let minConfidence = 1;
 	for (const [name, answer] of Object.entries(answers)) {
-		const typed = answer as { type?: string; confidence?: number; probabilities?: Record<string, number> };
+		const typed = answer as {
+			type?: string;
+			score?: unknown;
+			confidence?: number;
+			probabilities?: Record<string, number>;
+		};
 		if (typed?.type !== "score") {
 			throw new Error(`Decision model returned unexpected answer type for ${name}`);
 		}
-		const value = scoreValue(typed.probabilities);
+		// Two score shapes exist across providers:
+		// - chat (Requesty): `score` is the chosen index; derive the value from
+		//   the probability distribution over criterion indices.
+		// - native (OpenRouter Decisions / TypeSafe): `score` is already the
+		//   probability-weighted position; use it directly.
+		let value: number | null;
+		if (typeof typed.score === "number" && Number.isFinite(typed.score) && !Number.isInteger(typed.score)) {
+			value = Math.min(1, Math.max(0, typed.score));
+		} else {
+			value = scoreValue(typed.probabilities);
+		}
 		if (value === null) {
 			throw new Error(`Decision model returned invalid probabilities for ${name}`);
 		}
@@ -231,25 +283,28 @@ function parseDecisionPayload(
 		scores,
 		issues,
 		summary,
-		usage: extractChatUsage(payload),
+		usage: extractUsageFromPayload(payload),
 		durationSeconds,
 	};
 }
 
-/** Builds the request body for one decision call. */
+/** Builds the request body for one decision call, per the provider's wire format. */
 function buildRequestBody(pair: EvaluationPair, config: DecisionConfig): string {
 	const userRequest = truncateField(pair.userRequest, config.maxCharsPerField);
 	const assistantResponse = truncateField(pair.assistantResponse, config.maxCharsPerField);
 	const provider = DECISION_PROVIDERS[config.providerName as keyof typeof DECISION_PROVIDERS];
+	const state = JSON.stringify({ user_request: userRequest, assistant_response: assistantResponse });
+	if (provider.wire === "chat") {
+		return JSON.stringify({
+			model: config.model,
+			messages: [{ role: "user", content: state }],
+			[provider.responseFormatKey]: { type: "questions", questions: buildQuestions() },
+		});
+	}
 	return JSON.stringify({
 		model: config.model,
-		messages: [
-			{
-				role: "user",
-				content: JSON.stringify({ user_request: userRequest, assistant_response: assistantResponse }),
-			},
-		],
-		[provider.responseFormatKey]: { type: "questions", questions: buildQuestions() },
+		state,
+		questions: buildQuestions(),
 	});
 }
 
@@ -267,7 +322,7 @@ export async function runDecisionEvaluation(
 	const startedAt = performance.now();
 
 	const doFetch = async (): Promise<Response> =>
-		fetchImpl(`${config.baseURL}${provider.chatPath}`, {
+		fetchImpl(`${config.baseURL}${provider.path}`, {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${config.apiKey}`,
