@@ -258,7 +258,9 @@ test("invalid probabilities throw", async () => {
 test("resolveDecisionConfig validates model, api key, and provider", () => {
 	const env = process.env.REQUESTY_API_KEY;
 	try {
-		process.env.REQUESTY_API_KEY = "env-key";
+		// CI may not have REQUESTY_API_KEY set; the config layer must fall back
+		// to the explicit apiKey before rejecting.
+		if (process.env.REQUESTY_API_KEY) delete process.env.REQUESTY_API_KEY;
 		const resolved = resolveDecisionConfig({
 			mode: "always",
 			sampleRate: 1,
@@ -266,8 +268,9 @@ test("resolveDecisionConfig validates model, api key, and provider", () => {
 			model: "sference/clef",
 			maxCharsPerField: 12_000,
 			blockLikelySecrets: true,
+			decision: { provider: "requesty", apiKey: "explicit-key" },
 		} as Parameters<typeof resolveDecisionConfig>[0]);
-		assert.equal(resolved.apiKey, "env-key");
+		assert.equal(resolved.apiKey, "explicit-key");
 		assert.equal(resolved.providerName, "requesty");
 		assert.equal(resolved.confidenceFloor, 0.5);
 	} finally {
